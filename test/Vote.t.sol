@@ -86,7 +86,7 @@ contract SimpleVotingSystemTest is Test {
         votingSystem.addCandidate("Candidate 1");
         vm.prank(admin);
         votingSystem.setWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
-        skip(1 hours); // Avancer le temps de 1 heure
+        skip(1 hours);
         votingSystem.vote(1);
         SimpleVotingSystem.Candidate memory candidate = votingSystem
             .getCandidate(1);
@@ -117,10 +117,9 @@ contract SimpleVotingSystemTest is Test {
         votingSystem.addCandidate("Candidate 1");
         vm.prank(admin);
         votingSystem.setWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
-        skip(1 hours); // Avancer le temps de 1 heure
+        skip(1 hours);
         vm.prank(nonAdmin);
         try votingSystem.vote(999) {
-            // Invalid candidate ID
             fail();
         } catch Error(string memory reason) {
             assertEq(reason, "Invalid candidate ID");
@@ -137,7 +136,7 @@ contract SimpleVotingSystemTest is Test {
 
         vm.prank(admin);
         votingSystem.setWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
-        skip(1 hours); // Avancer le temps de 1 heure
+        skip(1 hours);
 
         address voter1 = address(0x3);
         address voter2 = address(0x4);
@@ -167,15 +166,18 @@ contract SimpleVotingSystemTest is Test {
         vm.prank(admin);
         votingSystem.grantRole(votingSystem.FOUNDER_ROLE(), founder);
 
-        vm.deal(founder, 10 ether);
-        vm.prank(admin);
-        votingSystem.setWorkflowStatus(
-            SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES
-        );
-        votingSystem.addCandidate("Candidate 1");
+        uint256 initialBalance = address(votingSystem).balance;
+        uint256 amountToSend = 1 ether;
 
-        vm.prank(founder);
-        (bool success, ) = address(votingSystem).call{value: 1 ether}("");
-        require(success, "Fund transfer failed");
+        (bool success, ) = address(votingSystem).call{value: amountToSend}("");
+        assertTrue(success, "Fund transfer failed");
+
+        uint256 finalBalance = address(votingSystem).balance;
+
+        assertEq(
+            finalBalance,
+            initialBalance + amountToSend,
+            "Contract balance did not increase by the expected amount"
+        );
     }
 }

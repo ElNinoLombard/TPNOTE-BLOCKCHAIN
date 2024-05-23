@@ -54,7 +54,7 @@ contract SimpleVotingSystem is AccessControl {
 
     constructor() {
         owner = msg.sender;
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender); // Owner gets the default admin role
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
     }
 
