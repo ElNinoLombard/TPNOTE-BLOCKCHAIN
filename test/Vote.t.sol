@@ -163,21 +163,26 @@ contract SimpleVotingSystemTest is Test {
 
     function testFounderCanSendFundsToCandidates() public {
         address founder = address(0x6);
+        uint candidateId = 1;
+
         vm.prank(admin);
         votingSystem.grantRole(votingSystem.FOUNDER_ROLE(), founder);
 
-        uint256 initialBalance = address(votingSystem).balance;
-        uint256 amountToSend = 1 ether;
-
-        (bool success, ) = address(votingSystem).call{value: amountToSend}("");
-        assertTrue(success, "Fund transfer failed");
-
-        uint256 finalBalance = address(votingSystem).balance;
-
-        assertEq(
-            finalBalance,
-            initialBalance + amountToSend,
-            "Contract balance did not increase by the expected amount"
+        vm.deal(founder, 10 ether);
+        vm.prank(admin);
+        votingSystem.setWorkflowStatus(
+            SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES
         );
+        votingSystem.addCandidate("Candidate 1");
+
+        SimpleVotingSystem.Candidate memory oldCandidate = votingSystem
+            .getCandidate(candidateId);
+        vm.prank(founder);
+        votingSystem.fundCandidate{value: 1 ether}(candidateId);
+
+        SimpleVotingSystem.Candidate memory candidateFounded = votingSystem
+            .getCandidate(candidateId);
+
+        assertEq(oldCandidate.found, candidateFounded.found);
     }
 }

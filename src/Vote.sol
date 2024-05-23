@@ -8,6 +8,7 @@ contract SimpleVotingSystem is AccessControl {
         uint id;
         string name;
         uint voteCount;
+        uint found;
     }
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -65,7 +66,7 @@ contract SimpleVotingSystem is AccessControl {
         );
         require(bytes(_name).length > 0, "Candidate name cannot be empty");
         uint candidateId = candidateIds.length + 1;
-        candidates[candidateId] = Candidate(candidateId, _name, 0);
+        candidates[candidateId] = Candidate(candidateId, _name, 0, 0);
         candidateIds.push(candidateId);
     }
 
@@ -138,6 +139,9 @@ contract SimpleVotingSystem is AccessControl {
             _candidateId > 0 && _candidateId <= candidateIds.length,
             "Invalid candidate ID"
         );
-        payable(owner).transfer(msg.value);
+
+        Candidate memory candidate = getCandidate(_candidateId);
+
+        candidate.found += msg.value;
     }
 }
